@@ -34,11 +34,11 @@ def download_market_prices() -> pd.DataFrame:
 
     closing_prices = market_data["Close"].copy()
     missing_tickers = [
-    ticker
-    for ticker in ASSETS
-    if ticker not in closing_prices.columns
-    or closing_prices[ticker].dropna().empty
-]
+        ticker
+        for ticker in ASSETS
+        if ticker not in closing_prices.columns
+        or closing_prices[ticker].dropna().empty
+    ]
 
     if missing_tickers:
         raise RuntimeError(
