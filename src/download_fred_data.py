@@ -4,7 +4,7 @@ import pandas as pd
 from pandas_datareader import data as web
 
 
-START_DATE = "2011-01-01"
+START_DATE = "2010-01-01"
 OUTPUT_PATH = Path("data/raw/fred_macro_data.csv")
 
 FRED_SERIES = {
