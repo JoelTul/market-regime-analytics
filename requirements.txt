@@ -4,3 +4,6 @@ yfinance
 matplotlib
 seaborn
 pandas-datareader
+sqlalchemy
+psycopg[binary]
+python-dotenv
