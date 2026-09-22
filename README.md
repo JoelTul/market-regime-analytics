@@ -1,22 +1,40 @@
 # Market Regime Analytics
 
-An end-to-end financial analytics analytics project examining how asset performance, risk, and diversification change across different economic regimes.
+An end-to-end financial analytics project examining how asset performance, risk, and diversification change across economic regimes.
 
 ## Overview
 
-This project builds a reproducible Python pipeline that combines financial-market data with Federal Reserve economic data.
+This project combines daily financial-market data with monthly Federal Reserve economic data to compare six exchange-traded funds across four economic regimes.
 
-The completed completed pipeline currently:
+The completed Python pipeline:
 
-* Downloads adjusted daily ETF prices from from Yahoo Finance
-* Validates and transforms the market data
-* Calculates return and risk metrics
-* Downloads Downloads monthly macroeconomic indicators from FRED
-* Calculates inflation, growth growth, interest-rate, and labor-market metrics
+* Downloads and validates adjusted ETF prices from Yahoo Finance
+* Calculates market return and risk metrics
+* Downloads macroeconomic indicators from FRED
+* Calculates inflation, growth, interest-rate, and labor-market metrics
 * Classifies each month into one of four economic regimes
-* Generates portfolio-ready market visualizations
+* Converts daily asset returns into monthly returns
+* Merges asset returns with the corresponding economic regimes
+* Calculates performance and volatility by asset and regime
+* Generates portfolio-ready financial visualizations
 
-The next phase will merge daily asset returns with the monthly regime classifications and compare asset performance across economic environments.
+The next major phase will load the analytical datasets into PostgreSQL, develop SQL views and queries, and build an interactive Power BI dashboard.
+
+## Project Status
+
+The core Python analysis is complete.
+
+| Component                        | Status   |
+| -------------------------------- | -------- |
+| Market-data extraction           | Complete |
+| Return and risk calculations     | Complete |
+| FRED macroeconomic extraction    | Complete |
+| Economic-regime classification   | Complete |
+| Asset and regime integration     | Complete |
+| Regime-performance analysis      | Complete |
+| Static analytical visualizations | Complete |
+| PostgreSQL and SQL               | Planned  |
+| Power BI dashboard               | Planned  |
 
 ## Business Questions
 
@@ -26,7 +44,7 @@ The next phase will merge daily asset returns with the monthly regime classifica
 4. Which assets experienced the most severe drawdowns?
 5. How do asset returns change across inflation and economic-growth regimes?
 6. Which assets perform best in each regime?
-7. Which combinations offer the strongest diversification benefits?
+7. Which assets provide the strongest diversification benefits under different economic conditions?
 
 ## Assets Analyzed
 
@@ -52,7 +70,18 @@ Monthly economic data are downloaded from the Federal Reserve Bank of St. Louis.
 | [FEDFUNDS](https://fred.stlouisfed.org/series/FEDFUNDS) | Effective Federal Funds Rate | Measures monetary-policy conditions |
 | [UNRATE](https://fred.stlouisfed.org/series/UNRATE)     | Unemployment Rate            | Measures labor-market conditions    |
 
-The FRED dataset begins in January 2010 to provide sufficient lookback history for the market-analysis period beginning in January 2012.
+The FRED dataset begins in January 2010 to provide enough lookback history for the market-analysis period beginning in January 2012.
+
+## Data Coverage
+
+| Dataset                       | Coverage                           |       Observations |
+| ----------------------------- | ---------------------------------- | -----------------: |
+| Daily market prices           | January 3, 2012–September 18, 2026 |             22,194 |
+| Raw FRED observations         | January 2010–August 2026           |                798 |
+| Monthly macroeconomic dataset | January 2010–August 2026           |                200 |
+| Classified analysis period    | January 2012–August 2026           |         174 months |
+| Asset-regime dataset          | January 2012–August 2026           | 1,044 asset-months |
+| Regime-performance summary    | Six assets across four regimes     |            24 rows |
 
 ## Technology Stack
 
@@ -68,34 +97,23 @@ The FRED dataset begins in January 2010 to provide sufficient lookback history f
 * PostgreSQL and SQL — planned
 * Power BI — planned
 
-## Current Data Pipeline
+## Data Pipeline
 
-```text
-Yahoo Finance
-      |
-      v
-Daily adjusted ETF prices
-      |
-      v
-Market return and risk metrics
-      |
-      v
-Static market visualizations
+```mermaid
+flowchart TD
+    A[Yahoo Finance] --> B[Daily ETF prices]
+    B --> C[Market metrics]
+    C --> D[Monthly asset returns]
 
+    E[FRED] --> F[Monthly macro indicators]
+    F --> G[Macroeconomic metrics]
+    G --> H[Regime classification]
 
-FRED
-      |
-      v
-Monthly economic indicators
-      |
-      v
-Macroeconomic metrics
-      |
-      v
-Four-regime classification
+    D --> I[Asset-regime merge]
+    H --> I
+    I --> J[Performance summary]
+    J --> K[Charts and future dashboard]
 ```
-
-The next pipeline stage will merge the daily market dataset with the corresponding monthly regime classification.
 
 Downloaded and generated datasets are excluded from Git because they can be reproduced by running the project scripts.
 
@@ -139,11 +157,11 @@ Each month is classified using the direction of inflation and industrial-product
 
 The federal-funds rate and unemployment rate are retained as contextual variables but are not currently used to determine the regime.
 
-These classifications describe the direction of economic conditions. A “Disinflationary Slowdown” classification does not necessarily mean the economy is in a recession.
+These classifications describe the direction of economic conditions. A Disinflationary Slowdown classification does not necessarily mean the economy is in a recession.
 
 ## Regime Distribution
 
-The current regime sample covers January 2012 through August 2026.
+The classified sample covers January 2012 through August 2026.
 
 | Regime                   | Months | Share |
 | ------------------------ | -----: | ----: |
@@ -152,16 +170,11 @@ The current regime sample covers January 2012 through August 2026.
 | Stagflation              |     42 | 24.1% |
 | Disinflationary Slowdown |     50 | 28.7% |
 
-A total of 174 out of 176 months received classifications.
-
-Two months remain unclassified:
-
-* October 2025, because CPI and unemployment observations were unavailable
-* January 2026, because its three-month inflation trend depends on the missing October 2025 observation
+A total of 174 out of 176 macroeconomic months received classifications.
 
 ## Latest Regime
 
-The latest available macroeconomic classification is for August 2026.
+The latest available classification is for August 2026.
 
 | Metric                                      |                    Value |
 | ------------------------------------------- | -----------------------: |
@@ -173,9 +186,9 @@ The latest available macroeconomic classification is for August 2026.
 
 Both inflation and industrial-production growth decelerated relative to three months earlier.
 
-## Preliminary Market Results
+## Full-Period Market Results
 
-Market results currently cover January 2012 through September 18, 2026.
+Market results cover January 2012 through September 18, 2026.
 
 | Ticker | Total Return | Annualized Volatility | Maximum Drawdown |
 | ------ | -----------: | --------------------: | ---------------: |
@@ -186,16 +199,41 @@ Market results currently cover January 2012 through September 18, 2026.
 | GLD    |      157.29% |                16.49% |          -42.11% |
 | TLT    |        2.45% |                14.38% |          -48.35% |
 
-## Initial Market Findings
+### Full-Period Findings
 
 * QQQ generated the strongest compound growth, although it carried more volatility than SPY and SCHD.
 * SPY produced substantially stronger returns than IWM despite having lower volatility.
 * SCHD delivered lower volatility and a slightly smaller maximum drawdown than SPY.
 * Gold produced positive long-term growth but still experienced a drawdown exceeding 40%.
-* Long-term Treasury bonds performed poorly over the full sample and experienced the most severe maximum drawdown.
-* These results demonstrate why return alone is insufficient when comparing investments.
+* Long-term Treasury bonds performed poorly over the sample and experienced the most severe maximum drawdown.
+* Return alone is insufficient when comparing investments.
 
-Asset performance by regime has not yet been calculated.
+## Asset Performance by Regime
+
+Daily asset returns were compounded into monthly returns and joined to the corresponding monthly regime.
+
+The table reports geometric annualized returns across the historical months assigned to each regime.
+
+| Ticker | Goldilocks | Reflation | Stagflation | Disinflationary Slowdown |
+| ------ | ---------: | --------: | ----------: | -----------------------: |
+| SPY    |     25.97% |    11.60% |       9.51% |                   15.42% |
+| QQQ    |     32.38% |    17.91% |       7.83% |                   23.55% |
+| SCHD   |     24.99% |     7.25% |       8.51% |                   14.88% |
+| IWM    |     29.60% |     8.16% |       6.51% |                    5.46% |
+| TLT    |      9.09% |    -4.79% |      -4.23% |                    3.01% |
+| GLD    |      7.40% |     8.04% |     -11.12% |                   18.67% |
+
+### Regime Findings
+
+* QQQ generated the highest annualized return during Goldilocks, Reflation, and Disinflationary Slowdown months.
+* SPY produced the highest return during Stagflation months and outperformed the other equity funds in that regime.
+* Equity returns were strongest during Goldilocks conditions, when growth accelerated while inflation decelerated.
+* IWM performed strongly during Goldilocks months but produced only a 5.46% annualized return during Disinflationary Slowdowns.
+* TLT produced negative annualized returns during both inflation-accelerating regimes.
+* GLD performed best during Disinflationary Slowdowns and produced a negative return during the project’s directional Stagflation regime.
+* The results show that directional macroeconomic classifications can produce findings that differ from conventional regime expectations.
+
+These results are descriptive and ex-post. They do not represent a real-time trading strategy.
 
 ## Visualizations
 
@@ -203,13 +241,65 @@ Asset performance by regime has not yet been calculated.
 
 ![Growth of \$1 invested](dashboard/screenshots/growth_of_one.png)
 
-### Risk and Return
+### Full-Period Risk and Return
 
 ![Annualized return versus volatility](dashboard/screenshots/risk_return_scatter.png)
 
 ### Maximum Drawdown
 
 ![Maximum drawdown by asset](dashboard/screenshots/maximum_drawdown.png)
+
+### Asset Returns by Regime
+
+![Annualized asset returns by economic regime](dashboard/screenshots/regime_return_heatmap.png)
+
+### Risk and Return by Regime
+
+![Asset risk and return across economic regimes](dashboard/screenshots/regime_risk_return.png)
+
+## Analytical Outputs
+
+The regime-analysis pipeline creates two processed datasets:
+
+### Asset-Regime Monthly Dataset
+
+`data/processed/asset_regime_monthly.csv`
+
+Contains one row per classified asset-month, including:
+
+* Monthly asset return
+* Month-end adjusted price
+* Economic regime
+* Inflation and growth metrics
+* Federal-funds rate
+* Unemployment rate
+
+The dataset contains 1,044 rows:
+
+```text
+174 classified months × 6 assets = 1,044 asset-months
+```
+
+### Regime-Performance Summary
+
+`data/processed/regime_performance_summary.csv`
+
+Contains one row per asset and regime, including:
+
+* Number of months
+* Average monthly return
+* Median monthly return
+* Geometric annualized return
+* Annualized volatility
+* Positive-month percentage
+* Best monthly return
+* Worst monthly return
+
+The dataset contains 24 rows:
+
+```text
+4 regimes × 6 assets = 24 asset-regime summaries
+```
 
 ## Repository Structure
 
@@ -229,7 +319,9 @@ market-regime-analytics/
 │   ├── create_market_charts.py
 │   ├── download_fred_data.py
 │   ├── calculate_macro_metrics.py
-│   └── classify_market_regimes.py
+│   ├── classify_market_regimes.py
+│   ├── analyze_regime_performance.py
+│   └── create_regime_charts.py
 ├── .gitignore
 ├── README.md
 └── requirements.txt
@@ -278,6 +370,13 @@ python src/calculate_macro_metrics.py
 python src/classify_market_regimes.py
 ```
 
+Run the integrated regime analysis:
+
+```bash
+python src/analyze_regime_performance.py
+python src/create_regime_charts.py
+```
+
 ## Project Roadmap
 
 * [x] Create the GitHub project structure
@@ -289,21 +388,33 @@ python src/classify_market_regimes.py
 * [x] Calculate inflation, growth, rate, and labor-market metrics
 * [x] Classify monthly economic regimes
 * [x] Document known source-data gaps
-* [ ] Merge daily asset returns with monthly regimes
-* [ ] Analyze asset performance within each regime
-* [ ] Generate regime-performance visualizations
+* [x] Merge monthly asset returns with economic regimes
+* [x] Analyze asset performance within each regime
+* [x] Generate regime-performance visualizations
+* [ ] Add a one-month-lagged regime robustness analysis
 * [ ] Load analytical data into PostgreSQL
 * [ ] Develop advanced SQL queries and views
 * [ ] Build an interactive Power BI dashboard
-* [ ] Document final investment insights
+* [ ] Document final dashboard insights
 
 ## Data-Quality Notes
 
 * CPI and unemployment observations are unavailable for October 2025 because of the 2025 lapse in federal appropriations.
 * Missing source observations are preserved and flagged rather than replaced with invented raw values.
 * January 2026 cannot be classified because its three-month inflation comparison depends on October 2025.
+* September 2026 market returns are excluded from the regime analysis because macroeconomic data currently end in August 2026.
 * FRED observations may be revised after their initial publication.
 * Generated CSV files are excluded from version control and can be reproduced from the source scripts.
+
+## Methodology Notes
+
+* Daily adjusted-price returns are compounded into monthly returns.
+* Regime-level returns are geometric annualized returns across non-contiguous historical months assigned to each regime.
+* Volatility is annualized from monthly return standard deviations.
+* All assets use the same classified months, ensuring comparable coverage.
+* The current analysis assigns each return to the economic conditions measured during the same month.
+* Because economic data are published with a delay, the current classifications are appropriate for historical description rather than real-time portfolio allocation.
+* A one-month-lagged robustness analysis is planned to reduce look-ahead concerns.
 
 ## Limitations
 
@@ -311,10 +422,11 @@ python src/classify_market_regimes.py
 * Results depend on the selected assets, dates, and regime methodology.
 * Regimes are based on changes in inflation and industrial-production growth rather than official recession dates.
 * Directional classifications do not necessarily indicate absolute economic strength or weakness.
+* Economic data may be revised after their original publication.
+* The sample contains only 34 to 50 months per regime.
 * The analysis does not currently incorporate taxes, trading costs, or a risk-free benchmark.
 * Market data should be treated as research data rather than institutional-grade pricing.
-* Asset performance by regime has not yet been implemented.
-* The project is for educational and analytical purposes and does not constitute investment advice.
+* The results are descriptive and do not constitute investment advice.
 
 ## Author
 
