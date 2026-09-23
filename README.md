@@ -6,7 +6,7 @@ An end-to-end financial analytics project examining how asset performance, risk,
 
 This project combines daily financial-market data with monthly Federal Reserve economic data to compare six exchange-traded funds across four economic regimes.
 
-The completed Python pipeline:
+The completed analytics pipeline:
 
 * Downloads and validates adjusted ETF prices from Yahoo Finance
 * Calculates market return and risk metrics
@@ -16,13 +16,14 @@ The completed Python pipeline:
 * Converts daily asset returns into monthly returns
 * Merges asset returns with the corresponding economic regimes
 * Calculates performance and volatility by asset and regime
-* Generates portfolio-ready financial visualizations
-
-The next major phase will load the analytical datasets into PostgreSQL, develop SQL views and queries, and build an interactive Power BI dashboard.
+* Loads the analytical datasets into PostgreSQL
+* Creates reusable SQL views and analytical queries
+* Presents the results through a two-page Power BI dashboard
+* Generates portfolio-ready Python visualizations
 
 ## Project Status
 
-The core Python analysis is complete.
+The end-to-end analytics workflow is complete.
 
 | Component                        | Status   |
 | -------------------------------- | -------- |
@@ -33,8 +34,9 @@ The core Python analysis is complete.
 | Asset and regime integration     | Complete |
 | Regime-performance analysis      | Complete |
 | Static analytical visualizations | Complete |
-| PostgreSQL and SQL               | Planned  |
-| Power BI dashboard               | Planned  |
+| PostgreSQL database              | Complete |
+| SQL views and analytical queries | Complete |
+| Power BI dashboard               | Complete |
 
 ## Business Questions
 
@@ -44,7 +46,9 @@ The core Python analysis is complete.
 4. Which assets experienced the most severe drawdowns?
 5. How do asset returns change across inflation and economic-growth regimes?
 6. Which assets perform best in each regime?
-7. Which assets provide the strongest diversification benefits under different economic conditions?
+7. Which assets provide the strongest risk-adjusted performance in each regime?
+8. How persistent are economic regimes, and which transitions occur most frequently?
+9. Which assets provide the strongest diversification benefits under different economic conditions?
 
 ## Assets Analyzed
 
@@ -92,30 +96,33 @@ The FRED dataset begins in January 2010 to provide enough lookback history for t
 * pandas-datareader
 * Matplotlib
 * Seaborn
+* SQLAlchemy
+* psycopg
+* python-dotenv
+* PostgreSQL
+* SQL
+* Power BI
 * Git and GitHub
+* Yahoo Finance market data
 * FRED economic data
-* PostgreSQL and SQL — planned
-* Power BI — planned
 
 ## Data Pipeline
 
 ```mermaid
 flowchart TD
     A[Yahoo Finance] --> B[Daily ETF prices]
-    B --> C[Market metrics]
-    C --> D[Monthly asset returns]
-
-    E[FRED] --> F[Monthly macro indicators]
-    F --> G[Macroeconomic metrics]
-    G --> H[Regime classification]
-
-    D --> I[Asset-regime merge]
-    H --> I
-    I --> J[Performance summary]
-    J --> K[Charts and future dashboard]
+    B --> C[Python market analysis]
+    D[FRED] --> E[Macroeconomic metrics]
+    E --> F[Regime classification]
+    C --> G[Asset-regime integration]
+    F --> G
+    G --> H[PostgreSQL database]
+    H --> I[SQL views and analysis]
+    I --> J[Power BI dashboard]
+    G --> K[Python charts]
 ```
 
-Downloaded and generated datasets are excluded from Git because they can be reproduced by running the project scripts.
+Downloaded and generated CSV datasets are excluded from Git because they can be reproduced by running the project scripts.
 
 ## Market Metrics
 
@@ -182,6 +189,8 @@ The latest available classification is for August 2026.
 | Three-month inflation trend                 |  -0.81 percentage points |
 | Year-over-year industrial-production growth |                    1.42% |
 | Three-month growth trend                    |  -0.24 percentage points |
+| Federal-funds rate                          |                    3.63% |
+| Unemployment rate                           |                    4.10% |
 | Regime                                      | Disinflationary Slowdown |
 
 Both inflation and industrial-production growth decelerated relative to three months earlier.
@@ -235,7 +244,106 @@ The table reports geometric annualized returns across the historical months assi
 
 These results are descriptive and ex-post. They do not represent a real-time trading strategy.
 
-## Visualizations
+## PostgreSQL Database
+
+The processed analytical datasets are loaded into a PostgreSQL database named `market_regime_analytics`.
+
+The database uses an `analytics` schema containing three normalized tables.
+
+| Table                                 | Purpose                                                  |  Rows |
+| ------------------------------------- | -------------------------------------------------------- | ----: |
+| `analytics.assets`                    | Asset reference data                                     |     6 |
+| `analytics.macro_regimes`             | Monthly macroeconomic metrics and regime classifications |   200 |
+| `analytics.asset_monthly_performance` | Monthly returns and prices for each asset                | 1,044 |
+
+The Python loader performs a transactional full refresh so that related tables are updated together.
+
+### Database Views
+
+Four reusable SQL views support analysis and Power BI reporting:
+
+| View                                      | Purpose                                                                 |
+| ----------------------------------------- | ----------------------------------------------------------------------- |
+| `analytics.vw_asset_regime_monthly`       | Joins monthly asset performance to macroeconomic regimes                |
+| `analytics.vw_latest_macro_conditions`    | Returns the most recent complete macroeconomic conditions               |
+| `analytics.vw_regime_performance_summary` | Calculates performance and risk statistics by asset and regime          |
+| `analytics.vw_regime_rankings`            | Ranks assets by return and risk-adjusted performance within each regime |
+
+Database credentials are stored in a local `.env` file that is excluded from version control.
+
+## SQL Analysis
+
+The project includes reusable SQL queries demonstrating:
+
+* Multi-table joins
+* Common table expressions
+* Conditional aggregation
+* Window functions
+* Return and risk-adjusted rankings
+* Best-versus-worst asset comparisons
+* Regime-transition analysis
+* Consecutive-regime analysis using the gaps-and-islands technique
+* Asset performance relative to each asset’s average across regimes
+
+Key SQL files:
+
+* `sql/create_schema.sql`
+* `sql/create_views.sql`
+* `sql/analysis_queries.sql`
+
+### Highest-Returning Asset by Regime
+
+| Regime                   | Asset | Annualized Return |
+| ------------------------ | ----- | ----------------: |
+| Goldilocks               | QQQ   |            32.38% |
+| Reflation                | QQQ   |            17.91% |
+| Stagflation              | SPY   |             9.51% |
+| Disinflationary Slowdown | QQQ   |            23.55% |
+
+### Best Risk-Adjusted Asset by Regime
+
+| Regime                   | Asset |
+| ------------------------ | ----- |
+| Goldilocks               | SPY   |
+| Reflation                | QQQ   |
+| Stagflation              | SCHD  |
+| Disinflationary Slowdown | GLD   |
+
+The risk-adjusted ranking uses the ratio of annualized return to annualized volatility as a descriptive comparison measure.
+
+## Power BI Dashboard
+
+The PostgreSQL analytical views feed a two-page Power BI dashboard.
+
+The dashboard file is stored at:
+
+```text
+dashboard/market_regime_dashboard.pbix
+```
+
+### Regime Overview
+
+The overview page contains:
+
+* Current economic-regime card
+* Inflation, industrial-production growth, federal-funds-rate, and unemployment cards
+* Clustered column chart comparing annualized asset returns across regimes
+
+![Power BI regime overview](dashboard/screenshots/powerbi_regime_overview.png)
+
+### Risk and Rankings
+
+The second page contains:
+
+* Risk-versus-return scatterplot with ticker labels
+* Regime color coding
+* Asset return and volatility comparisons
+* Return rankings
+* Risk-adjusted rankings
+
+![Power BI risk and rankings](dashboard/screenshots/powerbi_risk_rankings.png)
+
+## Python Visualizations
 
 ### Growth of $1
 
@@ -258,8 +366,6 @@ These results are descriptive and ex-post. They do not represent a real-time tra
 ![Asset risk and return across economic regimes](dashboard/screenshots/regime_risk_return.png)
 
 ## Analytical Outputs
-
-The regime-analysis pipeline creates two processed datasets:
 
 ### Asset-Regime Monthly Dataset
 
@@ -306,13 +412,24 @@ The dataset contains 24 rows:
 ```text
 market-regime-analytics/
 ├── dashboard/
+│   ├── market_regime_dashboard.pbix
 │   └── screenshots/
+│       ├── growth_of_one.png
+│       ├── risk_return_scatter.png
+│       ├── maximum_drawdown.png
+│       ├── regime_return_heatmap.png
+│       ├── regime_risk_return.png
+│       ├── powerbi_regime_overview.png
+│       └── powerbi_risk_rankings.png
 ├── data/
 │   ├── raw/
 │   └── processed/
 ├── notebooks/
 ├── reports/
 ├── sql/
+│   ├── create_schema.sql
+│   ├── create_views.sql
+│   └── analysis_queries.sql
 ├── src/
 │   ├── download_market_data.py
 │   ├── calculate_market_metrics.py
@@ -321,7 +438,8 @@ market-regime-analytics/
 │   ├── calculate_macro_metrics.py
 │   ├── classify_market_regimes.py
 │   ├── analyze_regime_performance.py
-│   └── create_regime_charts.py
+│   ├── create_regime_charts.py
+│   └── load_postgres.py
 ├── .gitignore
 ├── README.md
 └── requirements.txt
@@ -354,7 +472,7 @@ Install the dependencies:
 python -m pip install -r requirements.txt
 ```
 
-Run the market-data pipeline:
+### Run the Market-Data Pipeline
 
 ```bash
 python src/download_market_data.py
@@ -362,7 +480,7 @@ python src/calculate_market_metrics.py
 python src/create_market_charts.py
 ```
 
-Run the macroeconomic pipeline:
+### Run the Macroeconomic Pipeline
 
 ```bash
 python src/download_fred_data.py
@@ -370,12 +488,66 @@ python src/calculate_macro_metrics.py
 python src/classify_market_regimes.py
 ```
 
-Run the integrated regime analysis:
+### Run the Integrated Regime Analysis
 
 ```bash
 python src/analyze_regime_performance.py
 python src/create_regime_charts.py
 ```
+
+### Configure PostgreSQL
+
+Create the project database:
+
+```powershell
+psql -U postgres -h localhost -c "CREATE DATABASE market_regime_analytics;"
+```
+
+Create a local `.env` file:
+
+```text
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB=market_regime_analytics
+POSTGRES_USER=market_analyst
+POSTGRES_PASSWORD=replace_with_your_password
+```
+
+Never commit the `.env` file or database password.
+
+Create the database schema:
+
+```powershell
+psql -U postgres -h localhost -d market_regime_analytics -f sql/create_schema.sql
+```
+
+Load the processed data:
+
+```bash
+python src/load_postgres.py
+```
+
+Create the analytical views:
+
+```powershell
+psql -U postgres -h localhost -d market_regime_analytics -f sql/create_views.sql
+```
+
+Run the analytical SQL queries:
+
+```powershell
+psql -P pager=off -U market_analyst -h localhost -d market_regime_analytics -f sql/analysis_queries.sql
+```
+
+### Open the Power BI Dashboard
+
+Open the following file in Power BI Desktop:
+
+```text
+dashboard/market_regime_dashboard.pbix
+```
+
+The dashboard imports data from the PostgreSQL analytical views. PostgreSQL must be running when refreshing the report.
 
 ## Project Roadmap
 
@@ -391,11 +563,11 @@ python src/create_regime_charts.py
 * [x] Merge monthly asset returns with economic regimes
 * [x] Analyze asset performance within each regime
 * [x] Generate regime-performance visualizations
+* [x] Load analytical data into PostgreSQL
+* [x] Develop advanced SQL queries and views
+* [x] Build a two-page Power BI dashboard
+* [x] Document database and dashboard insights
 * [ ] Add a one-month-lagged regime robustness analysis
-* [ ] Load analytical data into PostgreSQL
-* [ ] Develop advanced SQL queries and views
-* [ ] Build an interactive Power BI dashboard
-* [ ] Document final dashboard insights
 
 ## Data-Quality Notes
 
@@ -405,6 +577,7 @@ python src/create_regime_charts.py
 * September 2026 market returns are excluded from the regime analysis because macroeconomic data currently end in August 2026.
 * FRED observations may be revised after their initial publication.
 * Generated CSV files are excluded from version control and can be reproduced from the source scripts.
+* Numeric values are rounded before database insertion to maintain compatibility with PostgreSQL and Power BI decimal types.
 
 ## Methodology Notes
 
@@ -414,6 +587,7 @@ python src/create_regime_charts.py
 * All assets use the same classified months, ensuring comparable coverage.
 * The current analysis assigns each return to the economic conditions measured during the same month.
 * Because economic data are published with a delay, the current classifications are appropriate for historical description rather than real-time portfolio allocation.
+* The return-to-volatility ratio is a descriptive comparison and is not a Sharpe ratio because it does not subtract a risk-free rate.
 * A one-month-lagged robustness analysis is planned to reduce look-ahead concerns.
 
 ## Limitations

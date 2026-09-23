@@ -83,12 +83,28 @@ def parse_boolean(
 def prepare_for_sql(
     dataframe: pd.DataFrame,
 ) -> pd.DataFrame:
-    """Replace pandas missing values with database nulls."""
+    """Prepare finite, consistently rounded values for PostgreSQL."""
 
-    return dataframe.astype(object).where(
-        pd.notna(dataframe),
+    cleaned = dataframe.copy()
+
+    numeric_columns = cleaned.select_dtypes(
+        include="number"
+    ).columns
+
+    cleaned[numeric_columns] = cleaned[
+        numeric_columns
+    ].round(10)
+
+    cleaned = cleaned.replace(
+        [float("inf"), float("-inf")],
         None,
     )
+
+    return cleaned.astype(object).where(
+        pd.notna(cleaned),
+        None,
+    )
+
 
 
 def load_source_data() -> tuple[
