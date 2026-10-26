@@ -2,6 +2,18 @@
 
 An end-to-end financial analytics project examining how asset performance, risk, and diversification change across economic regimes.
 
+## Explore the Project
+
+- [Power BI dashboard screenshots](#power-bi-dashboard)
+- [Key findings by economic regime](#regime-findings)
+- [SQL analysis and asset rankings](#sql-analysis)
+- [Python visualizations](#python-visualizations)
+- [Local setup instructions](#running-the-project)
+
+No local setup is required to view the dashboard screenshots and findings in this README. Refreshing the Power BI report requires a local PostgreSQL connection.
+
+The displayed results reflect the documented dataset snapshot, with market data through September 18, 2026 and macroeconomic data through August 2026; they are not live market updates.
+
 ## Overview
 
 This project combines daily financial-market data with monthly Federal Reserve economic data to compare six exchange-traded funds across four economic regimes.
@@ -179,7 +191,7 @@ The classified sample covers January 2012 through August 2026.
 
 A total of 174 out of 176 macroeconomic months received classifications.
 
-## Latest Regime
+## Latest Regime in this Dataset
 
 The latest available classification is for August 2026.
 
