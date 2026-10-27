@@ -233,16 +233,16 @@ Market results cover January 2012 through September 18, 2026.
 
 Daily asset returns were compounded into monthly returns and joined to the corresponding monthly regime.
 
-The table reports geometric annualized returns across the historical months assigned to each regime.
+The table reports geometric annualized returns across the historical months assigned to each regime. Column headings show the number of classified months in each sample.
 
-| Ticker | Goldilocks | Reflation | Stagflation | Disinflationary Slowdown |
-| ------ | ---------: | --------: | ----------: | -----------------------: |
-| SPY    |     25.97% |    11.60% |       9.51% |                   15.42% |
-| QQQ    |     32.38% |    17.91% |       7.83% |                   23.55% |
-| SCHD   |     24.99% |     7.25% |       8.51% |                   14.88% |
-| IWM    |     29.60% |     8.16% |       6.51% |                    5.46% |
-| TLT    |      9.09% |    -4.79% |      -4.23% |                    3.01% |
-| GLD    |      7.40% |     8.04% |     -11.12% |                   18.67% |
+| Ticker | Goldilocks (34 months) | Reflation (48 months) | Stagflation (42 months) | Disinflationary Slowdown (50 months) |
+| ------ | --------------------: | -------------------: | ---------------------: | ----------------------------------: |
+| SPY    |                25.97% |               11.60% |                  9.51% |                              15.42% |
+| QQQ    |                32.38% |               17.91% |                  7.83% |                              23.55% |
+| SCHD   |                24.99% |                7.25% |                  8.51% |                              14.88% |
+| IWM    |                29.60% |                8.16% |                  6.51% |                               5.46% |
+| TLT    |                 9.09% |               -4.79% |                 -4.23% |                               3.01% |
+| GLD    |                 7.40% |                8.04% |                -11.12% |                              18.67% |
 
 ### Regime Findings
 
