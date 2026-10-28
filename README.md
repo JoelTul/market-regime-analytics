@@ -2,6 +2,10 @@
 
 An end-to-end financial analytics project examining how asset performance, risk, and diversification change across economic regimes.
 
+![Market Regime Analytics dashboard showing macroeconomic indicators and asset returns by regime](dashboard/screenshots/powerbi_regime_overview.png)
+
+[View dashboard details](#power-bi-dashboard) · [Explore SQL analysis](#sql-analysis) · [Review methodology](#methodology-notes)
+
 ## Explore the Project
 
 - [Power BI dashboard screenshots](#power-bi-dashboard)
